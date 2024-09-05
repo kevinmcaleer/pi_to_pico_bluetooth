@@ -6,8 +6,8 @@ Connect to Raspberry Pi Pico W (or any other BLE microcontroller) from a Raspber
 
 ```bash
 sudo apt-get update
-sudo apt-get install python3-pip libbluetooth-dev
-sudo pip3 install pybluez
+sudo apt-get install python3-pip
+pip3 install bleak
 ```
 
 ---
