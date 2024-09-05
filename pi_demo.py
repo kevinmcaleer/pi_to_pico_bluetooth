@@ -3,7 +3,7 @@ from bleak import BleakClient
 
 # Replace with the MAC address of your Raspberry Pi Pico W
 pico_address = "D8:3A:DD:3E:1B:6C"  # Update this with your Pico W's address 
-CHARACTERISTIC_UUID = "12345678-1234-5678-1234-56789abcdef1"  # Use the same UUID from the Pico W
+CHARACTERISTIC_UUID = "2A6E"  # Use the same UUID from the Pico W
 
 async def connect_and_communicate(address):
     print(f"Connecting to {address}...")
