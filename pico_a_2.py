@@ -49,7 +49,7 @@ async def receive_data_task(read_characteristic):
     while True:
         try:
             # This blocks until new data is available
-            data = await read_characteristic.read()
+            data = read_characteristic.read()
 
             if data:
                 print(f"Received: {decode_message(data)}")
