@@ -9,7 +9,7 @@ _SERVICE_UUID = bluetooth.UUID(0x1848)
 _CHARACTERISTIC_UUID = bluetooth.UUID(0x2A6E)
 
 # IAM = "Central" # Change to 'Peripheral' or 'Central'
-IAM = "Central"
+IAM = "Peripheral"
 
 if IAM not in ['Peripheral','Central']:
     print("IAM must be either Peripheral or Central")
