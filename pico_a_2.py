@@ -67,13 +67,13 @@ async def run_peripheral_mode():
     # Characteristic for the central to write
     write_characteristic = aioble.Characteristic(
         ble_service, _WRITE_CHARACTERISTIC_UUID,
-        read=True, write=True, capture=True
+        read=True, write=True, capture=False
     )
 
     # Characteristic for the peripheral to write
     read_characteristic = aioble.Characteristic(
         ble_service, _READ_CHARACTERISTIC_UUID,
-        read=True, write=True, capture=True
+        read=True, write=True, capture=False
     )
 
     aioble.register_services(ble_service)
