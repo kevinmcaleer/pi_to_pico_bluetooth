@@ -13,7 +13,7 @@ async def send_data_task(client):
     """Send data to the peripheral device."""
     message = "Hello from Central!".encode("utf-8")
     while True:
-        print(f"Sending message: {message}")
+        print(f"Central sending: {message}")
         await client.write_gatt_char(WRITE_CHARACTERISTIC_UUID, message)
         await asyncio.sleep(2)
 
@@ -21,8 +21,9 @@ async def receive_data_task(client):
     """Receive data from the peripheral device."""
     while True:
         try:
+            print("Central waiting for data from peripheral...")
             response = await client.read_gatt_char(READ_CHARACTERISTIC_UUID)
-            print(f"Received: {response.decode('utf-8')}")
+            print(f"Central received: {response.decode('utf-8')}")
             await asyncio.sleep(1)
         except Exception as e:
             print(f"Error receiving data: {e}")
