@@ -7,7 +7,7 @@ _SERVICE_UUID = bluetooth.UUID(0x1848)
 _WRITE_CHARACTERISTIC_UUID = bluetooth.UUID(0x2A6E)  # Central writes here
 _READ_CHARACTERISTIC_UUID = bluetooth.UUID(0x2A6F)   # Peripheral writes here
 
-IAM = "Peripheral"  # Adjust this for the Peripheral
+IAM = "Peripheral"
 
 MESSAGE = f"Hello from {IAM}!"
 
@@ -34,7 +34,7 @@ async def send_data_task(connection, write_characteristic):
     while True:
         message = f"{MESSAGE} {message_count}"
         message_count += 1
-        print(f"Sending {message}")
+        print(f"Sending: {message}")
 
         try:
             msg = encode_message(message)
@@ -48,10 +48,12 @@ async def receive_data_task(read_characteristic):
     """Receive data from the central device."""
     while True:
         try:
+            # This blocks until new data is available
             data = await read_characteristic.read()
+
             if data:
-                print(f"{IAM} received: {decode_message(data)}")
-            await asyncio.sleep(1)
+                print(f"Received: {decode_message(data)}")
+                await asyncio.sleep(1)
         except Exception as e:
             print(f"Error receiving data: {e}")
             break
