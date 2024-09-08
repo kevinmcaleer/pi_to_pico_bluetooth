@@ -2,6 +2,15 @@ import aioble
 import bluetooth
 import asyncio
 
+# Show the MAC address for the current Pico
+ble = bluetooth.BLE()
+ble.active(True)
+_, mac_address = ble.config('mac')
+formatted_mac = ':'.join(f'{b:02X}' for b in mac_address)
+print(f"Bluetooth MAC Address for this device is: {formatted_mac}")
+ble.active(False)
+ble = None
+
 # Define UUIDs for the service and characteristics
 _SERVICE_UUID = bluetooth.UUID(0x1848)
 _WRITE_CHARACTERISTIC_UUID = bluetooth.UUID(0x2A6E)  # Central writes here

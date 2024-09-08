@@ -7,7 +7,7 @@ WRITE_CHARACTERISTIC_UUID = uuids.normalize_uuid_16(0x2A6E) # Central writes her
 READ_CHARACTERISTIC_UUID = uuids.normalize_uuid_16(0x2A6F)  # Central reads here
 
 # List of known peripheral MAC addresses
-peripheral_addresses = ["D8:3A:DD:3E:1B:6C", "D8:3A:DD:4E:2C:7A"]  # Replace with actual MAC addresses
+peripheral_addresses = ["D8:3A:DD:3E:1B:6C", "D8:3A:DD:8D:CF:DE"]  # Replace with actual MAC addresses
 
 async def send_data_task(client, peripheral_name):
     """Send data to the peripheral."""
