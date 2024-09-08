@@ -1,123 +1,80 @@
 import aioble
 import bluetooth
+import ujson  # For handling JSON messages
+from machine import ADC, Pin
 import asyncio
-import machine
 
 # Define UUIDs for the service and characteristics
 _SERVICE_UUID = bluetooth.UUID(0x1848)
 _WRITE_CHARACTERISTIC_UUID = bluetooth.UUID(0x2A6E)  # Central writes here
-_READ_CHARACTERISTIC_UUID = bluetooth.UUID(0x2A6F)   # Peripheral writes here
+_READ_CHARACTERISTIC_UUID = bluetooth.UUID(0x2A6F)   # Peripheral responds here
 
-IAM = "Peripheral"
+# ADC Channel 4 reads the temperature sensor
+sensor_temp = ADC(4)
+conversion_factor = 3.3 / (65535)  # Conversion factor for ADC reading to voltage
 
-MESSAGE = f"Hello from {IAM}!"
-
-# Bluetooth parameters
-BLE_NAME = f"{IAM}"  # Dynamic name for the device
-BLE_SVC_UUID = _SERVICE_UUID
-BLE_APPEARANCE = 0x0300
-BLE_ADVERTISING_INTERVAL = 2000
-
-# state variables
-message_count = 0
-
-# Create an ADC object for the internal temperature sensor (connected to channel 4)
-sensor_temp = machine.ADC(4)
-
-# Conversion factors
-CONVERSION_FACTOR = 3.3 / (65535)  # 3.3V reference and 16-bit ADC
-OFFSET = 27  # Offset in Celsius
-SCALE_FACTOR = 1.721  # Scaling factor from datasheet
-
-def read_temperature()->int:
-    """ Returns current temperature """
-    # Read the raw ADC value
+# Function to read the internal temperature
+def read_temperature():
+    # Read raw temperature value
     raw_value = sensor_temp.read_u16()
-
-    # Convert raw ADC value to voltage
-    voltage = raw_value * CONVERSION_FACTOR
-
-    # Convert voltage to temperature in Celsius
-    temperature = OFFSET - (voltage - 0.706) / 0.001721
-
+    voltage = raw_value * conversion_factor
+    
+    # Convert to temperature (in Celsius)
+    temperature = 27 - (voltage - 0.706) / 0.001721
     return temperature
 
-def encode_message(message):
-    """Encode a message to bytes."""
-    return message.encode('utf-8')
-
-def decode_message(message):
-    """Decode a message from bytes."""
-    return message.decode('utf-8')
-
-async def send_data_task(connection, write_characteristic):
-    """Send data to the central device."""
-
-    global message_count
-    
+async def send_data_task(connection, characteristic):
+    """ Continuously send the temperature data upon request """
     while True:
-        temp = read_temperature()
-
-        print(f"Sending: {temp}")
-
-        try:
-            msg = encode_message(temp)
-            write_characteristic.write(msg)  # Peripheral writes data here
-            await asyncio.sleep(1)
-        except Exception as e:
-            print(f"Error while sending data: {e}")
-            continue
-
-async def receive_data_task(read_characteristic):
-    """Receive data from the central device."""
-    while True:
-        try:
-            # This blocks until new data is available
-            data = read_characteristic.read()
-
-            if data:
-                print(f"Received: {decode_message(data)}")
-                await asyncio.sleep(1)
-        except Exception as e:
-            print(f"Error receiving data: {e}")
-            break
+        # Wait for central to write data
+        data = await characteristic.read()
+        if data:
+            try:
+                # Parse the received data as JSON
+                message = ujson.loads(data.decode('utf-8'))
+                
+                # Check if the message asks for the temperature
+                if message.get('payload') == 'get temp':
+                    temp = read_temperature()
+                    response = {"temp": round(temp, 2)}  # Format the temperature response
+                    print(f"Sending temperature: {response['temp']}°C")
+                    await characteristic.write(ujson.dumps(response).encode('utf-8'))
+            except Exception as e:
+                print(f"Error: {e}")
+        
+        await asyncio.sleep(0.5)
 
 async def run_peripheral_mode():
-    """Run the peripheral mode."""
-    
+    """ Set up the peripheral mode """
+
     # Set up the Bluetooth service and characteristics
-    ble_service = aioble.Service(BLE_SVC_UUID)
-    
-    # Characteristic for the central to write
+    ble_service = aioble.Service(_SERVICE_UUID)
+
+    # Characteristic for the central to write requests (e.g., get temperature)
     write_characteristic = aioble.Characteristic(
         ble_service, _WRITE_CHARACTERISTIC_UUID,
-        read=True, write=True, capture=False
+        read=True, write=True, capture=True
     )
 
-    # Characteristic for the peripheral to write
+    # Characteristic for the peripheral to send temperature data
     read_characteristic = aioble.Characteristic(
         ble_service, _READ_CHARACTERISTIC_UUID,
-        read=True, write=True, capture=False
+        read=True, write=True, capture=True
     )
 
+    # Register the service
     aioble.register_services(ble_service)
 
-    print(f"{BLE_NAME} starting to advertise")
+    print("Peripheral starting to advertise...")
 
     while True:
-        async with await aioble.advertise(
-            BLE_ADVERTISING_INTERVAL, name=BLE_NAME, services=[BLE_SVC_UUID],
-            appearance=BLE_APPEARANCE) as connection:
-            
-            print(f"{BLE_NAME} connected to {connection.device}")
+        # Advertise and wait for a central to connect
+        async with await aioble.advertise(5000, name="PicoW", services=[_SERVICE_UUID]) as connection:
+            print("Connected to central device!")
 
-            # Create tasks for sending and receiving data
-            tasks = [
-                asyncio.create_task(send_data_task(connection, read_characteristic)),
-                asyncio.create_task(receive_data_task(write_characteristic)),
-            ]
-            await asyncio.gather(*tasks)
-            print(f"{IAM} disconnected")
-            break
+            # Send data when the central writes a valid request
+            await send_data_task(connection, write_characteristic)
+
+            print("Disconnected from central")
 
 asyncio.run(run_peripheral_mode())
