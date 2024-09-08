@@ -1,13 +1,13 @@
 import asyncio
-from bleak import BleakClient
+from bleak import BleakClient, uuids
 
 # Replace with the MAC address of your Raspberry Pi Pico W
 pico_address = "D8:3A:DD:3E:1B:6C"  # Update this with your Pico W's address
 
-# Use the full 128-bit UUIDs
-SERVICE_UUID = "00001848-0000-1000-8000-00805f9b34fb"  # Service UUID
-WRITE_CHARACTERISTIC_UUID = "00002A6E-0000-1000-8000-00805f9b34fb"  # Central writes here
-READ_CHARACTERISTIC_UUID = "00002A6F-0000-1000-8000-00805f9b34fb"   # Central reads here
+# Service UUID (0x1848) - but we need to normalize it to 128-bit UUID
+SERVICE_UUID = uuids.normalize_uuid_16(0x1848)
+WRITE_CHARACTERISTIC_UUID = uuids.normalize_uuid_16(0x2A6E) # Central writes here
+READ_CHARACTERISTIC_UUID = uuids.normalize_uuid_16(0x2A6F)  # Central reads here
 
 async def send_data_task(client):
     """Send data to the peripheral device."""
