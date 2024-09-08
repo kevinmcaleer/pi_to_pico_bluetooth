@@ -13,7 +13,7 @@ async def send_data_task(client, peripheral_name):
     """Send data to the peripheral."""
     message = f"Hello from Central to {peripheral_name}!".encode("utf-8")
     while True:
-        print(f"Central sending to {peripheral_name}: {message}")
+        # print(f"Central sending to {peripheral_name}: {message}")
         await client.write_gatt_char(WRITE_CHARACTERISTIC_UUID, message)
         await asyncio.sleep(2)  # Send data every 2 seconds
 
@@ -21,7 +21,7 @@ async def receive_data_task(client, peripheral_name):
     """Receive data from the peripheral."""
     while True:
         try:
-            print(f"Central waiting for data from {peripheral_name}...")
+            # print(f"Central waiting for data from {peripheral_name}...")
             response = await client.read_gatt_char(READ_CHARACTERISTIC_UUID)
             print(f"Central received from {peripheral_name}: {response.decode('utf-8')}")
             await asyncio.sleep(1)
