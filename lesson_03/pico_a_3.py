@@ -1,15 +1,34 @@
 import aioble
 import bluetooth
+from machine import ADC, Pin
 import asyncio
 
 # Define UUIDs for the service and characteristics
 _SERVICE_UUID = bluetooth.UUID(0x1848)
 _WRITE_CHARACTERISTIC_UUID = bluetooth.UUID(0x2A6E)  # Central writes here
-_READ_CHARACTERISTIC_UUID = bluetooth.UUID(0x2A6F)   # Peripheral writes here
+_READ_CHARACTERISTIC_UUID = bluetooth.UUID(0x2A6F)   # Peripheral responds here
+
+# ADC Channel 4 reads the temperature sensor
+sensor_temp = ADC(4)
+conversion_factor = 3.3 / 65535  # Conversion factor for ADC reading to voltage
+
+# Function to read the internal temperature
+def read_temperature():
+    raw_value = sensor_temp.read_u16()
+    voltage = raw_value * conversion_factor
+    temperature = 27 - (voltage - 0.706) / 0.001721
+    return temperature
+
+# Show the MAC address for the current Pico
+ble = bluetooth.BLE()
+ble.active(True)
+_, mac_address = ble.config('mac')
+formatted_mac = ':'.join(f'{b:02X}' for b in mac_address)
+print(f"Bluetooth MAC Address for this device is: {formatted_mac}")
+ble.active(False)
+ble = None
 
 IAM = "Peripheral"
-
-MESSAGE = f"Hello from {IAM}!"
 
 # Bluetooth parameters
 BLE_NAME = f"{IAM}"  # Dynamic name for the device
@@ -30,13 +49,10 @@ def decode_message(message):
 
 async def send_data_task(connection, write_characteristic):
     """Send data to the central device."""
-
     global message_count
-    
     while True:
-        message = f"{MESSAGE} {message_count}"
-        message_count += 1
-        print(f"Sending: {message}")
+        message = f"{read_temperature()}°C"
+        # print(f"Sending: {message}")
 
         try:
             msg = encode_message(message)
