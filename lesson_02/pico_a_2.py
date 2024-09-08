@@ -43,7 +43,7 @@ async def send_data_task(connection, write_characteristic):
     while True:
         message = f"{MESSAGE} {message_count}"
         message_count += 1
-        print(f"Sending: {message}")
+        # print(f"Sending: {message}")
 
         try:
             msg = encode_message(message)
