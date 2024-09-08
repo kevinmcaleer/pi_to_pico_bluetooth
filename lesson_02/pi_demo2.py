@@ -2,8 +2,8 @@ import asyncio
 from bleak import BleakClient, uuids
 
 # Replace with the MAC address of your Raspberry Pi Pico W
-# pico_address = "D8:3A:DD:3E:1B:6C"  # Update this with your Pico W's address
-pico_address = "D8:3A:DD:8D:CF:DE"
+pico_address = "D8:3A:DD:3E:1B:6C"  # Update this with your Pico W's address
+# pico_address = "D8:3A:DD:8D:CF:DE"
 
 # Service UUID (0x1848) - but we need to normalize it to 128-bit UUID
 SERVICE_UUID = uuids.normalize_uuid_16(0x1848)
