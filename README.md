@@ -16,5 +16,4 @@ This Repo contains a number of lesson folders, each with a set of files that cor
 
 - Lesson 1: Basic BLE Communication between a Pi and a Pico running MicroPython
 - Lesson 2: Handle two communication with send and received data
-- Lesson 3: Send/Receive data from multiple Picos
-- Lesson 4: Send/Receive data from multiple Picos running as Temperature sensors
+- Lesson 3: Send/Receive data from Pico running as a Temperature sensor
